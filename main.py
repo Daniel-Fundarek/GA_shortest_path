@@ -24,7 +24,6 @@ def draw_points(_area, _row, _c):
 r = 20
 c = 100
 
-
 def create_map(_row, _column):
     area = numpy.zeros((_row, _column), list)
     for curr_row in range(_row):
