@@ -18,10 +18,13 @@ def draw_point(_canvas, _point, size):
 
 def draw_points(_canvas, _area):
     for index in range(len(_area)):
-
         position = _area[index]
         # print(position)
         draw_point(_canvas, position, 2)
+
+
+def create_obstacles():
+    pass
 
 
 def create_map(_row, _column):
@@ -36,6 +39,13 @@ def create_map(_row, _column):
 
 
 def draw_obstacles(canvas, obstacle):
+    for obstacle in obstacles:
+        obstacle[0][0] -= offset
+        obstacle[0][1] += offset
+        obstacle[1][0] += offset
+        obstacle[1][1] -= offset
+        canvas.create_line(obstacle)
+        # canvas.create_line(obstacle[0][0] - offset, obstacle[0][1] + offset, obstacle[1][0] + offset,obstacle[1][1] - offset)
     pass
 
 
@@ -46,15 +56,17 @@ def draw_obstacles(canvas, obstacle):
 r = 20
 c = 100
 step = 10
-ySelection = [i for i in range(0, r * step, step)]
+ySelection = [i for i in range(10, r * step, step)]
 xSelection = [i for i in range(0, c * step, step)]
 obstacles = []
 # obstacle generation
-for i in range(10):
+for i in range(0, c * step, step * 10):
+    #   x = random.choice(xSelection)
+    # x1 = random.choice(xSelection)
+    x = i
+    x1 = i + random.randrange(10, 90, 10)
     y = random.choice(ySelection)
-    x = random.choice(xSelection)
     y1 = random.choice(ySelection)
-    x1 = random.choice(xSelection)
     obstacles.append([[x, y], [x1, y1]])
 ###########
 
@@ -66,6 +78,7 @@ offset = 5
 
 canvas = tkinter.Canvas(top, bg="white", height=r * step + 50, width=c * step + 50)
 draw_points(canvas, area)
+draw_obstacles(canvas, obstacles)
 canvas.pack()
 top.mainloop()
 print('obstacles ', obstacles)
