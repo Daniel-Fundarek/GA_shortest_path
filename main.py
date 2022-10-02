@@ -84,7 +84,7 @@ def draw_lines(canvas, _chromosome, area):
 r = 20
 c = 100
 step = 10
-generation = 5000
+generation = 29000
 ga = GeneticAlgorithm
 ySelection = [i for i in range(10, r * step, step)]
 obstacles = create_obstacles(c, step, 100)
@@ -125,9 +125,9 @@ for i in range(generation):
     work2 = ga.select_random(population, fitness, 15)
     work3 = ga.select_best(population, fitness, 2)
 
-    work1 = ga.additive_mutate(work1, i * multiplier, 50, [-3, 3])
-    work2 = ga.cross(work2, 0.5, 50)
-    work3 = ga.mutate(work3, 0.6, 3)
+    work1 = ga.additive_mutate(work1, i * multiplier, 3, [-3, 3])
+    work2 = ga.cross(work2, 0.2, 50)
+    work3 = ga.mutate(work3, 0.15, 3)
 
     work4 = ga.select_random(population, fitness, 14)
     work4.extend(ga.select_best(population, fitness, 1))
@@ -139,7 +139,7 @@ for i in range(generation):
 
     work4 = ga.additive_mutate(work4, 0.2, 2, [-1, 1])
     work5 = ga.invert(work5, 0.3)
-    work6 = ga.mutate(work6, i * multiplier, random.randint(1, 99))
+    work6 = ga.mutate(work6, i * multiplier, random.randint(1, 98))
     work7 = ga.generate_population(100, 20)
     newPop.extend(work1)
     newPop.extend(work2)
