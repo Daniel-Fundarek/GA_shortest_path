@@ -3,6 +3,12 @@ import numpy
 import random
 import sys
 
+import numpy as np
+
+import GeneticAlgorithm
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
 
 def draw_point(_canvas, _point, size):
     size /= 2
@@ -23,8 +29,18 @@ def draw_points(_canvas, _area):
         draw_point(_canvas, position, 2)
 
 
-def create_obstacles():
-    pass
+def create_obstacles(c, step):
+    # obstacle generation
+    _obstacles = []
+    for i in range(0, c * step, step * 10):
+        x = i
+        x1 = i + random.randrange(10, 80, 10)
+        y = random.choice(ySelection)
+        y1 = random.choice(ySelection)
+        _obstacles.append([[x, y], [x1, y1]])
+
+    return _obstacles
+    ###########
 
 
 def create_map(_row, _column):
@@ -35,76 +51,114 @@ def create_map(_row, _column):
             area.append([curr_row * step, curr_column * step])
             counter += 1
 
-    print(area)
+    # print(area)
     return area
 
 
-def draw_obstacles(canvas, obstacles):
-    for obstacle in obstacles:
-        obstacle[0][0] -= offset
-        obstacle[0][1] += offset
-        obstacle[1][0] += offset
-        obstacle[1][1] -= offset
-        canvas.create_line(obstacle)
-        # canvas.create_line(obstacle[0][0] - offset, obstacle[0][1] + offset, obstacle[1][0] + offset,obstacle[1][1] - offset)
+def draw_obstacles(canvas, _obstacles):
+    for _obstacle in _obstacles:
+        x0 = _obstacle[0][0] - offset
+        y0 = _obstacle[0][1] + offset
+        x1 = _obstacle[1][0] - offset
+        y1 = _obstacle[1][1] + offset
+        canvas.create_line(x0, y0, x1, y1)
 
 
 def draw_lines(canvas, _chromosome, area):
+    for index in range(1, len(_chromosome)):
+        point0 = area[_chromosome[index - 1] * 100 + index - 1]
+        # print((_chromosome[index]) * 100 + index,_chromosome[index - 1],index)
+        point1 = area[(_chromosome[index]) * 100 + index]
+        # print(point0, point1)
+        x0 = point0[1]   + offset
+        y0 = point0[0] + offset
+        x1 = point1[1]   + offset
+        y1 = point1[0] + offset
+        canvas.create_line(x0, y0, x1, y1, fill='green')
 
-    for index in range(1,len(_chromosome)):
-        point0 = area[_chromosome[index-1] * 100 + index-1]
-        point1 = area[(_chromosome[index] ) * 100 + index]
-        print(point0,point1)
-        x0 = point0[1] + offset
-        y0 = point0[0] - offset
-        x1 = point1[1] + offset
-        y1 = point1[0] - offset
-        canvas.create_line(x0,y0,x1,y1,fill='green')
-
-
-def generate_chromosome(num_gennes):
-    chromosome = []
-    for i in range(num_gennes):
-        chromosome.append(random.randint(0, 19))
-    chromosome[0] = 10
-    chromosome[99] = 10
-    print(chromosome)
-    return chromosome
 
 # obstacle = [[190, 0], [130, 40]]
 # canvas.create_line(obstacle[0][0] - offset, obstacle[0][1] + offset, obstacle[1][0] + offset, obstacle[1][1] - offset)
 
-
+# main
 r = 20
 c = 100
 step = 10
+generation = 3000
+ga = GeneticAlgorithm
 ySelection = [i for i in range(10, r * step, step)]
-xSelection = [i for i in range(0, c * step, step)]
-obstacles = []
-chromosome = []
+obstacles = create_obstacles(c, step)
+# chromosome = ga.generate_chromosome(100)
+population = []
+population = ga.generate_population(100, 50)
 
-# obstacle generation
-for i in range(0, c * step, step * 10):
-    #   x = random.choice(xSelection)
-    # x1 = random.choice(xSelection)
-    x = i
-    x1 = i + random.randrange(10, 80, 10)
-    y = random.choice(ySelection)
-    y1 = random.choice(ySelection)
-    obstacles.append([[x, y], [x1, y1]])
-###########
-
-
-# print(ySelection, xSelection)
+# print('population:', population)
+# population = ga.mutate(population,0.6,50)
+# population = ga.cross(population,0.6,50)
+# population = ga.additive_mutate(population, 0.6, 50, [-3, 3])
+# print('population:', population)
 top = tkinter.Tk()
 area = create_map(r, c)  # x -> <0,190> step 10 y -> <0,990
-chromosome = generate_chromosome(100)
 offset = 5
+fitness = []
+evolution = []
+for i in range(generation):
+    fitness = ga.calculate_fitness(population, area)
+    newPop = []
+    work1 = []
+    work2 = []
+    work3 = []
 
+    [fitness, population] = ga.sort(population, fitness)
+    evolution.append(min(fitness))
+    newPop = ga.select_best(population, fitness, 3)
+    newPop.extend(ga.select_random(population, fitness, 7))
+
+    work1 = ga.select_best(population, fitness, 5)
+    # print(work1)
+    work1.extend(ga.select_random(population, fitness, 18))
+
+    work2 = ga.select_random(population, fitness, 15)
+    work3 = ga.select_best(population, fitness, 2)
+
+    work1 = ga.additive_mutate(work1, 0.3, 50, [-3, 3])
+    work2 = ga.cross(work2, 0.3, 30)
+    work3 = ga.mutate(work3, 0.3, 1)
+    newPop.extend(work1)
+    newPop.extend(work2)
+    newPop.extend(work3)
+    population = newPop
+    print(f'Evolution number:{i} fitness: {evolution[i]} ')
+# drawing
+print(evolution)
+'''
+x = [i for i in range(500)]
+fig, ax = plt.subplots()
+ax.plot(x,evolution,color='green')
+fig.savefig("evolution.pdf")
+fig.show()
+
+# print('obstacles ', obstacles)
+
+
+# Data for plotting
+t = np.arange(0.0, 2.0, 0.01)
+s = 1 + np.sin(2 * np.pi * t)
+
+fig, ax = plt.subplots()
+ax.plot(t, s)
+
+ax.set(xlabel='time (s)', ylabel='voltage (mV)',
+       title='About as simple as it gets, folks')
+ax.grid()
+
+fig.savefig("test.png")
+plt.show()
+
+'''
 canvas = tkinter.Canvas(top, bg="white", height=r * step + 50, width=c * step + 50)
 draw_points(canvas, area)
 draw_obstacles(canvas, obstacles)
-draw_lines(canvas,chromosome,area)
+draw_lines(canvas, population[0], area)
 canvas.pack()
 top.mainloop()
-print('obstacles ', obstacles)
